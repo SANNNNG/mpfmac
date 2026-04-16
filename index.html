@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPF Pro - 綜合管理系統 V4.8.2 BETA</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #1a73e8; --success: #34a853; --danger: #ea4335; --warning: #fbbc04; --dark: #202124; --gray: #f8f9fa; }
+        body { font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; background: #f4f6f8; margin: 0; padding: 0; color: #333; }
+        
+        .navbar { background: var(--dark); color: white; padding: 0 20px; display: flex; align-items: center; height: 60px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); justify-content: space-between; }
+        .nav-left { display: flex; align-items: center; }
+        .nav-logo { font-weight: bold; font-size: 1.2em; margin-right: 40px; color: var(--warning); }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-item { cursor: pointer; padding: 10px 15px; border-radius: 5px; transition: 0.3s; color: #ccc; text-decoration: none; font-size: 0.95em; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-item.active { background: var(--primary); color: white; }
+        .lang-btn { background: #444; color: white; border: 1px solid #666; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85em; }
+
+        .container { max-width: 1200px; margin: 20px auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); min-height: 80vh; }
+        .page { display: none; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .home-hero { text-align: center; padding: 50px 20px; background: linear-gradient(135deg, #1a73e8, #1557b0); color: white; border-radius: 15px; margin-bottom: 30px; }
+        .live-info { font-size: 1.1em; margin-top: 15px; display: flex; justify-content: center; gap: 20px; opacity: 0.9; }
+
+        .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; border: 1px solid #eee; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .stat-card h3 { font-size: 1em; color: #666; margin: 0; }
+        .stat-card p { font-size: 1.8em; font-weight: bold; margin-top: 10px; color: var(--primary); }
+
+        .company-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .company-box { padding: 15px; border: 1px solid #eee; border-radius: 12px; background: #fff; position: relative; border-top: 4px solid var(--primary); }
+        label { font-size: 0.85em; color: #666; font-weight: bold; display: block; margin-top: 8px; }
+        select, input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; margin-top: 5px; }
+        .btn-add { background: var(--success); color: white; padding: 12px 20px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; }
+        .btn-save { background: var(--primary); color: white; flex-grow: 1; padding: 12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 30px; }
+        th, td { border: 1px solid #eee; padding: 12px; text-align: center; }
+        .timeline-item { padding: 15px; border-left: 4px solid var(--primary); background: var(--gray); margin-bottom: 15px; border-radius: 0 10px 10px 0; }
+        .timeline-item b { color: var(--primary); font-size: 1.1em; }
+        
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
+        .modal-content { background: white; margin: 50px auto; padding: 30px; border-radius: 20px; width: 90%; max-width: 650px; position: relative; }
+        .chart-container { margin-top: 40px; padding: 20px; border: 1px solid #eee; border-radius: 15px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-left">
+        <div class="nav-logo">MPF Pro <small style="font-size: 0.6em; color: #fff; background: var(--danger); padding: 2px 5px; border-radius: 3px;">BETA</small></div>
+        <div class="nav-links">
+            <div id="nav-home" class="nav-item active" onclick="switchPage('home', this)">🏠 Dashboard</div>
+            <div id="nav-tool" class="nav-item" onclick="switchPage('mpf-tool', this)">📊 Tools</div>
+            <div id="nav-hist" class="nav-item" onclick="switchPage('history', this)">📜 History</div>
+        </div>
+    </div>
+    <button class="lang-btn" onclick="toggleLang()">EN / 繁中</button>
+</nav>
+
+<div class="container">
+    <div id="home" class="page active">
+        <div class="home-hero">
+            <h1 id="ui-home-welcome">歡迎使用 MPF 管理系統</h1>
+            <div class="live-info">
+                <span id="current-time">Loading Time...</span>
+                <span id="weather-info">🌤 Loading Weather...</span>
+            </div>
+        </div>
+        <h2 id="ui-home-snap">💰 最新資產概況</h2>
+        <div class="stat-cards">
+            <div class="stat-card">
+                <h3 id="ui-home-total-lbl">總資產</h3>
+                <p id="home-grand-total">HKD $0.00</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="ui-home-profit-lbl">累計盈利</h3>
+                <p id="home-grand-profit">HKD $0.00</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="ui-home-count-lbl">數據筆數</h3>
+                <p id="home-record-count">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="mpf-tool" class="page">
+        <h2 id="ui-tool-title">📊 強積金資產管理工具</h2>
+        <div id="company-inputs" class="company-grid"></div>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <button class="btn-add" id="ui-add-btn" onclick="addTrustee()">➕ 新增受託人項目</button>
+            <button class="btn-save" id="btn-save-main" onclick="saveRecord()">💾 儲存今日紀錄</button>
+        </div>
+        <hr>
+        <h3 id="ui-hist-title">📋 歷史數據清單</h3>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead><tr id="table-header"></tr></thead>
+                <tbody id="history-body"></tbody>
+            </table>
+        </div>
+
+        <div class="chart-container">
+            <h3 id="ui-trend-title">📈 總資產升跌趨勢 (Trend)</h3>
+            <canvas id="trendChart" style="max-height: 400px;"></canvas>
+        </div>
+    </div>
+
+    <div id="history" class="page">
+        <h2 id="ui-upd-title">📜 完整更新歷史紀錄 History Log</h2>
+        <div id="timeline-box"></div>
+    </div>
+</div>
+
+<div id="viewModal" class="modal">
+    <div class="modal-content">
+        <span style="position:absolute; right:20px; top:15px; cursor:pointer; font-size:24px;" onclick="closeViewModal()">&times;</span>
+        <h3 id="modal-date" style="color:var(--primary)"></h3>
+        <div id="modal-detail-text" style="margin-bottom:20px;"></div>
+        <div style="width: 100%; max-width: 300px; margin: auto;">
+            <canvas id="detailPieChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    const i18n = {
+        'zh': {
+            navHome: "🏠 主頁 Dashboard", navTool: "📊 管理 Tools", navHist: "📜 更新 History",
+            homeWelcome: "歡迎使用 MPF 管理系統", homeSnap: "💰 最新資產概況",
+            homeTotal: "總資產", homeProfit: "累計盈利", homeCount: "數據筆數",
+            toolTitle: "📊 強積金資產管理工具", addBtn: "➕ 新增受託人項目", saveBtn: "💾 儲存今日紀錄", updateBtn: "📝 更新指定紀錄",
+            trusteeLbl: "核准受託人", totalLbl: "總額 Total", profitLbl: "盈利 Profit", principalLbl: "本金 (自動計算)",
+            histTitle: "📋 歷史數據清單", dateHead: "日期", totalHead: "總結餘", profitHead: "總盈利", opHead: "操作",
+            trendTitle: "📈 總資產升跌趨勢", view: "查看", edit: "編輯", del: "刪除", delConfirm: "確定刪除此紀錄？", updTitle: "📜 完整更新歷史紀錄",
+            // 歷史紀錄內容
+            v1: "系統初步建立，支援基礎數據輸入與 LocalStorage 儲存。",
+            v2: "加入自動計算本金功能，優化 UI 表格顯示。",
+            v3: "引入 Chart.js，支援圓餅圖分析受託人佔比。",
+            v4: "<b>重大更新</b>：引入 Dashboard 主頁、SPA 架構、即時天氣時鐘、趨勢圖表及擴充受託人名單。"
+        },
+        'en': {
+            navHome: "🏠 Home Dashboard", navTool: "📊 MPF Tools", navHist: "📜 Update History",
+            homeWelcome: "Welcome to MPF System", homeSnap: "💰 Asset Snapshot",
+            homeTotal: "Total Assets", homeProfit: "Total Profit", homeCount: "Total Records",
+            toolTitle: "📊 MPF Asset Management", addBtn: "➕ Add New Trustee", saveBtn: "💾 Save Daily Record", updateBtn: "📝 Update Record",
+            trusteeLbl: "Approved Trustee", totalLbl: "Total Amount", profitLbl: "Profit/Gain", principalLbl: "Principal (Auto)",
+            histTitle: "📋 Historical Records", dateHead: "Date", totalHead: "Balance", profitHead: "Profit", opHead: "Action",
+            trendTitle: "📈 Total Asset Trend", view: "View", edit: "Edit", del: "Delete", delConfirm: "Delete this record?", updTitle: "📜 Full Update Logs",
+            v1: "System established with basic input and LocalStorage support.",
+            v2: "Added auto-principal calculation and optimized UI table.",
+            v3: "Integrated Chart.js for trustee distribution pie charts.",
+            v4: "<b>Major Update</b>: Dashboard, SPA architecture, Live Weather/Clock, Trend Line Chart, and expanded Trustee List."
+        }
+    };
+
+    const mpfTrustees = [
+        "友邦(信託) AIA", "銀聯信託 BCT", "交通銀行信託 BCOM", "東亞銀行 BEA", "中銀國際英國保誠 BOCI", 
+        "中國人壽 China Life", "花旗信托 Cititrust", "滙豐機構信託 HSBC", "宏利公積金 Manulife",
+        "信安信託 (亞洲) 有限公司 Principal", "渣打信託(香港)有限公司 Standard Chartered", 
+        "永明退休金信託有限公司 Sun Life Pension", "永明信託有限公司 Sun Life Trustee", 
+        "萬通信託有限公司 YF Life"
+    ];
+    
+    let lang = 'zh';
+    let records = JSON.parse(localStorage.getItem('mpf_records')) || [];
+    let currentConfig = [mpfTrustees[0]];
+    let editingId = null;
+    let pieChart = null;
+    let trendChart = null;
+
+    function formatMoney(num) {
+        return "HKD $" + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function toggleLang() {
+        lang = (lang === 'zh') ? 'en' : 'zh';
+        refreshUI();
+    }
+
+    function switchPage(pageId, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        el.classList.add('active');
+        if (pageId === 'mpf-tool') setTimeout(renderTrendChart, 100);
+        refreshUI();
+    }
+
+    function refreshUI() {
+        const t = i18n[lang];
+        document.getElementById('nav-home').innerText = t.navHome;
+        document.getElementById('nav-tool').innerText = t.navTool;
+        document.getElementById('nav-hist').innerText = t.navHist;
+        document.getElementById('ui-home-welcome').innerText = t.homeWelcome;
+        document.getElementById('ui-home-snap').innerText = t.homeSnap;
+        document.getElementById('ui-home-total-lbl').innerText = t.homeTotal;
+        document.getElementById('ui-home-profit-lbl').innerText = t.homeProfit;
+        document.getElementById('ui-home-count-lbl').innerText = t.homeCount;
+        document.getElementById('ui-tool-title').innerText = t.toolTitle;
+        document.getElementById('ui-add-btn').innerText = t.addBtn;
+        document.getElementById('ui-hist-title').innerText = t.histTitle;
+        document.getElementById('ui-upd-title').innerText = t.updTitle;
+        document.getElementById('ui-trend-title').innerText = t.trendTitle;
+        document.getElementById('btn-save-main').innerText = editingId ? t.updateBtn : t.saveBtn;
+        
+        if (records.length > 0) {
+            document.getElementById('home-grand-total').innerText = formatMoney(records[0].gt);
+            document.getElementById('home-grand-profit').innerText = formatMoney(records[0].gp);
+            document.getElementById('home-grand-profit').style.color = records[0].gp >= 0 ? 'var(--success)' : 'var(--danger)';
+        }
+        document.getElementById('home-record-count').innerText = records.length;
+
+        renderInputs();
+        renderTable();
+        renderTimeline();
+    }
+
+    function renderInputs() {
+        const t = i18n[lang];
+        const container = document.getElementById('company-inputs');
+        container.innerHTML = currentConfig.map((selectedName, i) => `
+            <div class="company-box">
+                <button style="position:absolute; right:10px; top:5px; color:red; border:none; background:none; cursor:pointer;" onclick="removeTrustee(${i})">✕</button>
+                <label>${t.trusteeLbl}</label>
+                <select id="sel-${i}" onchange="currentConfig[${i}]=this.value">
+                    ${mpfTrustees.map(opt => `<option value="${opt}" ${opt === selectedName ? 'selected' : ''}>${opt}</option>`).join('')}
+                </select>
+                <label>${t.totalLbl}</label><input type="number" id="t-${i}" class="t-in" oninput="calcP(${i})">
+                <label>${t.profitLbl}</label><input type="number" id="p-${i}" class="p-in" oninput="calcP(${i})">
+                <label>${t.principalLbl}</label><input type="text" id="res-${i}" style="background:#f1f3f4;" readonly value="0.00">
+            </div>
+        `).join('');
+    }
+
+    function calcP(i) {
+        const t = parseFloat(document.getElementById(`t-${i}`).value) || 0;
+        const p = parseFloat(document.getElementById(`p-${i}`).value) || 0;
+        document.getElementById(`res-${i}`).value = (t - p).toFixed(2);
+    }
+
+    function addTrustee() { currentConfig.push(mpfTrustees[0]); renderInputs(); }
+    function removeTrustee(i) { if(currentConfig.length > 1) { currentConfig.splice(i, 1); renderInputs(); } }
+
+    function saveRecord() {
+        const ts = document.querySelectorAll('.t-in'), ps = document.querySelectorAll('.p-in'), sels = document.querySelectorAll('select');
+        let dayData = { id: editingId || Date.now(), date: new Date().toLocaleDateString('zh-HK'), values: [], gt: 0, gp: 0 };
+        sels.forEach((s, i) => {
+            const total = parseFloat(ts[i].value) || 0, profit = parseFloat(ps[i].value) || 0;
+            dayData.values.push({ name: s.value, total, profit });
+            dayData.gt += total; dayData.gp += profit;
+        });
+        if (editingId) { records[records.findIndex(r => r.id === editingId)] = dayData; editingId = null; }
+        else { records.unshift(dayData); }
+        localStorage.setItem('mpf_records', JSON.stringify(records));
+        refreshUI();
+        renderTrendChart();
+        alert(lang==='zh'?"儲存成功":"Saved!");
+    }
+
+    function renderTable() {
+        const t = i18n[lang];
+        document.getElementById('table-header').innerHTML = `<th>${t.dateHead}</th><th>${t.totalHead}</th><th>${t.profitHead}</th><th>${t.opHead}</th>`;
+        document.getElementById('history-body').innerHTML = records.map((r, i) => `
+            <tr>
+                <td>${r.date}</td>
+                <td style="font-weight:bold; color:var(--primary)">${formatMoney(r.gt)}</td>
+                <td style="color:${r.gp>=0?'green':'red'}">${formatMoney(r.gp)}</td>
+                <td>
+                    <button style="background:var(--primary);color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;" onclick="viewDetail(${i})">${t.view}</button>
+                    <button style="background:var(--warning);color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;" onclick="editRecord(${i})">${t.edit}</button>
+                    <button style="background:var(--danger);color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;" onclick="deleteRow(${i})">${t.del}</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderTrendChart() {
+        const canvas = document.getElementById('trendChart');
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (trendChart) trendChart.destroy();
+        const chartData = [...records].reverse();
+        trendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.map(r => r.date),
+                datasets: [{
+                    label: lang === 'zh' ? '總結餘' : 'Balance',
+                    data: chartData.map(r => r.gt),
+                    borderColor: '#1a73e8',
+                    backgroundColor: 'rgba(26, 115, 232, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: false } }
+            }
+        });
+    }
+
+    function editRecord(idx) {
+        const r = records[idx];
+        editingId = r.id;
+        currentConfig = r.values.map(v => v.name);
+        renderInputs(); 
+        setTimeout(() => {
+            r.values.forEach((v, i) => {
+                const tel = document.getElementById(`t-${i}`), pel = document.getElementById(`p-${i}`);
+                if(tel) tel.value = v.total;
+                if(pel) pel.value = v.profit;
+                calcP(i);
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 50);
+    }
+
+    function viewDetail(idx) {
+        const r = records[idx];
+        document.getElementById('modal-date').innerText = r.date;
+        document.getElementById('modal-detail-text').innerHTML = r.values.map(v => `
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:5px 0;">
+                <span>${v.name}</span>
+                <span style="font-weight:bold;">${formatMoney(v.total)}</span>
+            </div>
+        `).join('');
+        document.getElementById('viewModal').style.display = 'block';
+        const ctx = document.getElementById('detailPieChart').getContext('2d');
+        if (pieChart) pieChart.destroy();
+        pieChart = new Chart(ctx, { type: 'doughnut', data: { labels: r.values.map(v => v.name), datasets: [{ data: r.values.map(v => v.total), backgroundColor: ['#4285f4','#34a853','#fbbc05','#ea4335','#8e44ad','#1abc9c','#e67e22','#95a5a6'] }] } });
+    }
+
+    function renderTimeline() {
+        const t = i18n[lang];
+        const logs = [
+            { v: "V4.8.2 測試版", d: "2026-04-16", c: t.v4 },
+            { v: "V4.8.1 測試版", d: "2026-04-10", c: "修正受託人編輯同步問題，恢復每日趨勢圖表顯示。" },
+            { v: "V4.8.0 測試版", d: "2026-04-05", c: "加入即時時鐘與 Open-Meteo 香港天氣 API 整合。" },
+            { v: "V4.0.0 測試版", d: "2026-03-01", c: t.v40Desc || "介面重構，引入 Dashboard 與單頁面導航。" },
+            { v: "V3.5.0 測試版", d: "2026-02-15", c: t.v3 },
+            { v: "V2.1.0 測試版", d: "2026-01-20", c: t.v2 },
+            { v: "V1.0.0 測試版", d: "2025-12-01", c: t.v1 }
+        ];
+        document.getElementById('timeline-box').innerHTML = logs.map(l => `
+            <div class="timeline-item">
+                <b>${l.v}</b><br><small>${l.d}</small>
+                <p style="margin-top:8px;">${l.c}</p>
+            </div>
+        `).join('');
+    }
+
+    function updateClock() {
+        const now = new Date();
+        const locale = (lang === 'zh') ? 'zh-HK' : 'en-US';
+        document.getElementById('current-time').innerText = now.toLocaleString(locale, { 
+            year: 'numeric', month: 'long', day: 'numeric', weekday: 'long', 
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false 
+        });
+    }
+
+    async function fetchWeather() {
+        try {
+            const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=22.3&longitude=114.1&current_weather=true');
+            const data = await res.json();
+            const temp = Math.round(data.current_weather.temperature);
+            const code = data.current_weather.weathercode;
+            let icon = '☀️';
+            if (code >= 1 && code <= 3) icon = '⛅';
+            if (code >= 51) icon = '🌧️';
+            document.getElementById('weather-info').innerText = `${icon} ${temp}°C`;
+        } catch (e) { document.getElementById('weather-info').innerText = ""; }
+    }
+
+    function deleteRow(i) { if(confirm(i18n[lang].delConfirm)) { records.splice(i, 1); localStorage.setItem('mpf_records', JSON.stringify(records)); refreshUI(); renderTrendChart(); } }
+    function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
+
+    setInterval(updateClock, 1000);
+    fetchWeather();
+    refreshUI();
+    renderTrendChart();
+</script>
+</body>
+</html>
