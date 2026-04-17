@@ -3,378 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MPF Pro Master V5.3.2</title>
+    <title>MPF Pro Master</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { 
-            --primary: #1a73e8; --success: #34a853; --danger: #ea4335; --warning: #fbbc04; 
-            --dark: #202124; --gray: #f8f9fa; --white: #ffffff; --shadow: 0 4px 15px rgba(0,0,0,0.08);
-        }
-        body { font-family: 'Segoe UI', 'Roboto', 'Microsoft JhengHei', sans-serif; background: #f0f2f5; margin: 0; color: #333; }
-        
-        /* Navbar */
-        .navbar { background: var(--dark); color: white; padding: 0 20px; display: flex; align-items: center; height: 55px; position: sticky; top: 0; z-index: 1000; justify-content: space-between; }
-        .nav-left { display: flex; align-items: center; }
-        .nav-logo { font-weight: bold; font-size: 1.1em; color: var(--warning); margin-right: 20px; white-space: nowrap; }
-        .nav-links { display: flex; gap: 5px; }
-        .nav-item { cursor: pointer; padding: 8px 12px; border-radius: 6px; font-size: 0.85em; color: #bbb; transition: 0.2s; }
-        .nav-item:hover { color: white; background: rgba(255,255,255,0.1); }
+        :root { --primary: #1a73e8; --success: #34a853; --warning: #fbbc04; --dark: #202124; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', 'PingFang TC', sans-serif; background: var(--bg); margin: 0; }
+        .navbar { background: var(--dark); color: white; padding: 0 30px; display: flex; align-items: center; height: 70px; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand-icon { width: 24px; height: 24px; fill: var(--warning); }
+        .nav-item { cursor: pointer; padding: 10px 18px; border-radius: 10px; color: #a0aec0; transition: 0.3s; font-size: 14px; }
         .nav-item.active { background: var(--primary); color: white; }
-        
-        .nav-right { display: flex; align-items: center; gap: 8px; }
-        .lang-select { background: #333; color: white; border: 1px solid #555; border-radius: 4px; padding: 3px 5px; font-size: 11px; cursor: pointer; }
-        .btn-tool { padding: 4px 10px; font-size: 11px; border-radius: 4px; border: 1px solid #555; background: transparent; color: #eee; cursor: pointer; }
-        .btn-tool:hover { background: #444; }
-
-        /* Container */
-        .container { max-width: 1100px; margin: 20px auto; background: var(--white); padding: 30px; border-radius: 16px; box-shadow: var(--shadow); min-height: 85vh; }
-        .page { display: none; }
-        .page.active { display: block; animation: fadeIn 0.4s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Dashboard */
-        .hero { background: linear-gradient(135deg, #1a73e8, #0d47a1); color: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 25px; }
-        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .stat-card { background: var(--white); border: 1px solid #eee; padding: 20px; border-radius: 12px; text-align: center; transition: 0.3s; }
-        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
-        .stat-val { font-size: 1.8em; font-weight: bold; color: var(--primary); margin: 5px 0; }
-
-        /* Table */
-        .table-container { overflow-x: auto; border-radius: 10px; border: 1px solid #eee; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        th { background: #f8f9fa; padding: 12px; font-size: 0.9em; color: #666; border-bottom: 2px solid #eee; text-align: center; }
-        td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 0.95em; }
-        
-        .btn-op { border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: bold; transition: 0.2s; color: white; }
-        .btn-view { background: #4285f4; }
-        .btn-edit { background: #fbbc05; }
-        .btn-del { background: #ea4335; }
-
-        /* Input Tool */
-        .input-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px; }
-        .account-box { background: #fff; border: 1px solid #eee; padding: 20px; border-radius: 12px; border-top: 5px solid var(--primary); }
-        label { font-size: 0.8em; color: #888; font-weight: bold; display: block; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
-        input[readonly] { background: #f5f5f5; border-color: #eee; color: #999; }
-
-        /* About Section */
-        .about-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .about-card { background: #f8faff; border: 1px solid #eef2ff; padding: 20px; border-radius: 12px; display: flex; gap: 15px; }
-        .about-icon { font-size: 2.2em; }
-        .about-content h4 { margin: 0 0 8px 0; color: var(--dark); }
-        .about-content p { margin: 0; font-size: 0.9em; color: #666; line-height: 1.6; }
-
-        /* Modal */
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
-        .modal-content { background: white; margin: 10% auto; padding: 25px; border-radius: 16px; width: 90%; max-width: 450px; position: relative; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .card-panel { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .btn-io { background: rgba(255,255,255,0.1); border: 1px solid #4a5568; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+        #viewModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-content { background: white; width: 95%; max-width: 600px; padding: 30px; border-radius: 28px; max-height: 90vh; overflow-y: auto; }
     </style>
 </head>
 <body>
 
 <nav class="navbar">
-    <div class="nav-left">
-        <div class="nav-logo">💎 MPF Pro Master</div>
-        <div class="nav-links">
-            <div class="nav-item active" onclick="switchPage('home', this)" data-i18n="nav_home">儀表板</div>
-            <div class="nav-item" onclick="switchPage('tool', this)" data-i18n="nav_tool">管理</div>
-            <div class="nav-item" onclick="switchPage('about', this)" data-i18n="nav_about">介紹</div>
-            <div class="nav-item" onclick="switchPage('history', this)" data-i18n="nav_log">日誌</div>
-        </div>
+    <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        <span style="font-weight:800;">MPF Pro Master</span>
     </div>
-    <div class="nav-right">
-        <button class="btn-tool" onclick="exportData()" data-i18n="export">匯出</button>
-        <button class="btn-tool" onclick="importData()" data-i18n="import">匯入</button>
-        <select class="lang-select" onchange="changeLang(this.value)">
-            <option value="zh">繁體中文</option>
-            <option value="cn">简体中文</option>
-            <option value="en">English</option>
-            <option value="jp">日本語</option>
-        </select>
+    <div style="display:flex; gap:5px;">
+        <div class="nav-item active" onclick="switchTab('home', this)">🏠 儀表板</div>
+        <div class="nav-item" onclick="switchTab('tool', this)">✍️ 數據錄入</div>
+        <div class="nav-item" onclick="switchTab('market', this)">📊 市場分析</div>
+        <div class="nav-item" onclick="switchTab('log', this)">📜 更新日誌</div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+        <button class="btn-io" onclick="handleExport()">📤 導出</button>
+        <button class="btn-io" onclick="handleImport()">📥 導入</button>
     </div>
 </nav>
 
-<div class="container">
-    
-    <div id="home" class="page active">
-        <div class="hero">
-            <h2 id="welcome-msg" data-i18n="welcome">歡迎使用 MPF 管理系統</h2>
-            <div style="font-size: 0.95em; opacity: 0.9;">
-                <span id="cur-date"></span> | <span id="clock">00:00:00</span> | <span id="weather">🌡️ HK: --°C</span>
-            </div>
-        </div>
-        
-        <div class="stat-grid">
-            <div class="stat-card"><h4 data-i18n="total_assets">總資產估值</h4><div class="stat-val" id="h-total">$0.00</div></div>
-            <div class="stat-card"><h4 data-i18n="total_profit">累計總盈利</h4><div class="stat-val" id="h-profit">$0.00</div></div>
-            <div class="stat-card"><h4 data-i18n="records">數據總筆數</h4><div class="stat-val" id="h-count">0</div></div>
-        </div>
-
-        <div style="background:#fff; padding:25px; border-radius:15px; border:1px solid #eee;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items:center;">
-                <h3 style="margin:0; font-size:1.1em;" data-i18n="growth_trend">📈 資產成長趨勢</h3>
-                <div class="time-btn-group">
-                    <button class="btn-tool" style="color:#333" onclick="renderChart(30)">1M</button>
-                    <button class="btn-tool" style="color:#333" onclick="renderChart(90)">3M</button>
-                    <button class="btn-tool" style="color:#333" onclick="renderChart(365)">1Y</button>
-                </div>
-            </div>
-            <div style="height: 350px;"><canvas id="mainChart"></canvas></div>
-        </div>
-    </div>
-
-    <div id="tool" class="page">
-        <h3 data-i18n="manage_title">📊 強積金受託人管理</h3>
-        <div id="input-container" class="input-grid"></div>
-        <div style="display:flex; gap:15px; margin-bottom:30px;">
-            <button class="btn-op btn-view" style="flex:1; padding:12px;" onclick="addRow()" data-i18n="add_btn">+ 新增受託人</button>
-            <button class="btn-op" style="flex:2; padding:12px; background:var(--primary);" onclick="save()" data-i18n="save_btn">💾 儲存今日數據</button>
-        </div>
-
-        <h3 data-i18n="history_list">📋 歷史數據清單 (按日期整合)</h3>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th data-i18n="th_date">記錄日期</th>
-                        <th data-i18n="th_time">最後更新</th>
-                        <th data-i18n="th_total">總結餘</th>
-                        <th data-i18n="th_profit">總盈利</th>
-                        <th data-i18n="th_op">操作</th>
-                    </tr>
-                </thead>
-                <tbody id="history-body"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="about" class="page">
-        <h3 data-i18n="about_title" style="margin-bottom:25px;">💡 系統設計與隱私說明</h3>
-        <div class="about-grid">
-            <div class="about-card">
-                <div class="about-icon">🔒</div>
-                <div class="about-content">
-                    <h4 data-i18n="ab_1_t">數據完全私有化</h4>
-                    <p data-i18n="ab_1_d">所有財富數據僅存於您的瀏覽器快取 (LocalStorage) 中。我們沒有資料庫，無法讀取您的資料，保障 100% 隱私。</p>
-                </div>
-            </div>
-            <div class="about-card">
-                <div class="about-icon">📊</div>
-                <div class="about-content">
-                    <h4 data-i18n="ab_2_t">多受託人整合</h4>
-                    <p data-i18n="ab_2_d">支援同時管理滙豐、友邦、宏利等不同受託人帳戶，系統會自動加總並分析整體的投資回報率。</p>
-                </div>
-            </div>
-            <div class="about-card">
-                <div class="about-icon">📈</div>
-                <div class="about-content">
-                    <h4 data-i18n="ab_3_t">視覺化趨勢分析</h4>
-                    <p data-i18n="ab_3_d">透過 Chart.js 強大引擎，將您的數據轉化為清晰的成長曲線。您可以查看一個月、三個月甚至一年的資產變化。</p>
-                </div>
-            </div>
-            <div class="about-card">
-                <div class="about-icon">☁️</div>
-                <div class="about-content">
-                    <h4 data-i18n="ab_4_t">離線備份與導入</h4>
-                    <p data-i18n="ab_4_d">您可以隨時將所有數據匯出為 JSON 檔案進行冷儲存，並在任何其他裝置或瀏覽器上重新導入恢復。</p>
-                </div>
-            </div>
-            <div class="about-card">
-                <div class="about-icon">🔄</div>
-                <div class="about-content">
-                    <h4 data-i18n="ab_5_t">按日整合邏輯</h4>
-                    <p data-i18n="ab_5_d">系統會自動覆蓋同日期的紀錄，保持歷史清單簡潔，僅保留每日最新的資產快照。</p>
-                </div>
-            </div>
-            <div class="about-card">
-                <div class="about-icon">🧮</div>
-                <div class="about-content">
-                    <h4 data-i18n="ab_6_t">自動本金計算</h4>
-                    <p data-i18n="ab_6_d">只需輸入總額與盈利，系統將自動回推您的投入本金，讓資產結構一目了然。</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="history" class="page">
-        <h3 data-i18n="log_title">📜 程式版本更新日誌</h3>
-        <div style="border-left: 3px solid var(--primary); padding-left: 20px;">
-            <div style="margin-bottom:20px;">
-                <b style="color:var(--primary)">V5.3.2 (2026-04-16) - Current</b><br>
-                <span>恢復受託人下拉選單，預設為「請選擇受託人」並強化儲存校驗邏輯。</span>
-            </div>
-            <div style="margin-bottom:20px; color:#666;">
-                <b>V5.2.0</b><br>
-                <span>優化導航欄佈局，增加多項系統介紹功能，修復語言顯示問題。</span>
-            </div>
-            <div style="margin-bottom:20px; color:#666;">
-                <b>V1.0.0</b><br>
-                <span>初始 Beta 版本發布。</span>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="viewModal" class="modal">
-    <div class="modal-content">
-        <span style="position:absolute; right:20px; top:15px; cursor:pointer; font-size:1.5em;" onclick="closeModal()">×</span>
-        <h3 id="m-title" style="color:var(--primary); margin-top:0;">資產詳情</h3>
-        <div id="m-body" style="border-top:1px solid #eee; padding:15px 0;"></div>
-        <canvas id="pieChart"></canvas>
-    </div>
-</div>
+<div id="app" class="container"></div>
+<div id="viewModal"><div class="modal-content" id="modal-body"></div></div>
 
 <script>
-    const i18n = {
-        zh: { nav_home: "儀表板", nav_tool: "管理", nav_about: "介紹", nav_log: "日誌", welcome: "歡迎使用 MPF 管理系統", total_assets: "總資產估值", total_profit: "累計總盈利", records: "數據總筆數", growth_trend: "📈 資產成長趨勢", manage_title: "📊 強積金受託人管理", history_list: "📋 歷史數據清單", th_date: "記錄日期", th_time: "更新時間", th_total: "總結餘", th_profit: "總盈利", th_op: "操作", export: "匯出", import: "匯入", add_btn: "+ 新增受託人", save_btn: "💾 儲存今日數據", about_title: "💡 系統設計與隱私說明", log_title: "📜 程式版本更新日誌", ab_1_t: "數據完全私有化", ab_1_d: "數據僅存於本地瀏覽器，確保 100% 隱私。", ab_2_t: "多受託人整合", ab_2_d: "同時管理多個帳戶，自動計算整體回報。", ab_3_t: "視覺化分析", ab_3_d: "動態曲線圖展示資產長期變化規律。", ab_4_t: "離線備份", ab_4_d: "支援匯出 JSON 檔案，跨設備遷移數據。", ab_5_t: "按日整合邏輯", ab_5_d: "每日僅保留一筆最新紀錄，保持清單整潔。", ab_6_t: "自動本金計算", ab_6_d: "根據總額與盈虧，精確推算投入成本。" },
-        cn: { nav_home: "仪表板", nav_tool: "管理", nav_about: "介绍", nav_log: "日志", welcome: "欢迎使用 MPF 管理系统", total_assets: "总资产估值", total_profit: "累计总盈利", records: "数据总笔数", growth_trend: "📈 资产成长趋势", manage_title: "📊 强积金受托人管理", history_list: "历史数据清单", th_date: "记录日期", th_time: "更新时间", th_total: "总结余", th_profit: "总盈利", th_op: "操作", export: "导出", import: "导入", add_btn: "+ 新增受托人", save_btn: "💾 储存今日数据", about_title: "💡 系统设计与隐私说明", log_title: "📜 程序版本更新日志", ab_1_t: "数据完全私有化", ab_1_d: "数据僅存於本地瀏覽器，确保 100% 隐私。", ab_2_t: "多受托人整合", ab_2_d: "同时管理多个账户，自动计算整体回报。", ab_3_t: "视觉化分析", ab_3_d: "动态曲线图展示资产長期變化规律。", ab_4_t: "离线备份", ab_4_d: "支持导出 JSON 文件，跨设备迁移数据。", ab_5_t: "按日整合逻辑", ab_5_d: "每日仅保留一笔最新纪录，保持清单整洁。", ab_6_t: "自动本金计算", ab_6_d: "根据总额与盈亏，精确推算投入成本。" },
-        en: { nav_home: "Dashboard", nav_tool: "Manage", nav_about: "About", nav_log: "Log", welcome: "Welcome to MPF Master", total_assets: "Total Assets", total_profit: "Net Profit", records: "Total Records", growth_trend: "📈 Growth Trend", manage_title: "📊 MPF Management", history_list: "📋 History List", th_date: "Date", th_time: "Updated", th_total: "Balance", th_profit: "Profit", th_op: "Action", export: "Export", import: "Import", add_btn: "+ Add Account", save_btn: "💾 Save Data", about_title: "💡 Design & Privacy", log_title: "📜 Update Logs", ab_1_t: "100% Private", ab_1_d: "Data stored in local browser only. No servers involved.", ab_2_t: "Multi-Trustee", ab_2_d: "Manage AIA, HSBC, etc. in one single dashboard.", ab_3_t: "Visual Analytics", ab_3_d: "Dynamic charts showing your long-term wealth growth.", ab_4_t: "Offline Backup", ab_4_d: "Export JSON files to transfer your data across devices.", ab_5_t: "Daily Consolidation", ab_5_d: "Keeps history clean by storing one record per day.", ab_6_t: "Auto Principal", ab_6_d: "Calculates cost based on balance and profit automatically." },
-        jp: { nav_home: "ホーム", nav_tool: "管理", nav_about: "紹介", nav_log: "履歴", welcome: "MPF管理システムへようこそ", total_assets: "資産評価額", total_profit: "累計利益", records: "データ件数", growth_trend: "📈 資産トレンド", manage_title: "📊 MPF資産管理", history_list: "📋 履歴リスト", th_date: "記録日", th_time: "更新時間", th_total: "残高合計", th_profit: "利益合計", th_op: "操作", export: "輸出", import: "輸入", add_btn: "+ 項目追加", save_btn: "💾 保存する", about_title: "💡 デザインとプライバシー", log_title: "📜 更新履歴", ab_1_t: "完全なプライバシー", ab_1_d: "データはローカルにのみ保存され、100%安全です。", ab_2_t: "マルチ管理", ab_2_d: "複数のMPF口座を1つのダッシュボードで統合管理。", ab_3_t: "視覚化分析", ab_3_d: "動的なグラフで長期的な資産推移を確認可能。", ab_4_t: "オフラインバックアップ", ab_4_d: "JSON形式でエクスポートし、データ移行が可能。", ab_5_t: "日別統合", ab_5_d: "1日1つの最新記録のみを保持し、リストを整頓。", ab_6_t: "自動元本計算", ab_6_d: "残高と損益から、投資コストを自動的に算出。" }
-    };
+    const DB_KEY = 'MPF_PRO_DATA_V1';
+    window.records = [];
 
-    const trusteeList = ["請選擇受託人", "滙豐 HSBC", "友邦 AIA", "宏利 Manulife", "恒生 Hang Seng", "中銀保誠 BOC-Prudential", "永明 Sun Life", "富達 Fidelity", "信安 Principal", "其士 Chevalier", "東亞 BEA", "其他 Other"];
-
-    let records = JSON.parse(localStorage.getItem('mpf_v532')) || [];
-    let currentConfig = ["請選擇受託人"];
-    let mainChart = null, pieChart = null, currentLang = 'zh';
-
-    function changeLang(l) {
-        currentLang = l;
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            if (i18n[l][key]) el.innerText = i18n[l][key];
-        });
-        renderTable(); 
+    // 修復數據初始化，確保數據格式一致
+    function initData() {
+        try {
+            const raw = localStorage.getItem(DB_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                window.records = parsed.map(r => ({
+                    date: r.date,
+                    totalA: parseFloat(r.totalA) || 0,
+                    totalB: parseFloat(r.totalB) || 0,
+                    totalC: parseFloat(r.totalC) || 0,
+                    totalAll: parseFloat(r.totalA) || 0,
+                    details: Array.isArray(r.details) ? r.details : []
+                }));
+            }
+        } catch (e) {
+            console.error("數據加載失敗", e);
+            window.records = [];
+        }
     }
 
-    function addRow() { currentConfig.push("請選擇受託人"); renderInputs(); }
+function switchTab(tabId, el) {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    
+    // 關鍵修復：切換分頁時重新讀取一次 LocalStorage
+    initData(); 
+    renderPage(tabId);
+}
 
-    function renderInputs() {
-        const container = document.getElementById('input-container');
-        container.innerHTML = currentConfig.map((v, i) => {
-            const options = trusteeList.map(t => `<option value="${t}" ${v === t ? 'selected' : ''}>${t}</option>`).join('');
-            return `
-                <div class="account-box">
-                    <div style="margin-bottom:12px;"><label>受託人名稱 / Trustee</label>
-                    <select id="name-${i}" onchange="updateConfigName(${i}, this.value)">${options}</select></div>
-                    <div style="margin-bottom:12px;"><label>總結餘 / Balance</label><input type="number" id="t-${i}" oninput="calcP(${i})" placeholder="0.00"></div>
-                    <div style="margin-bottom:12px;"><label>累計盈虧 / Profit</label><input type="number" id="p-${i}" oninput="calcP(${i})" placeholder="0.00"></div>
-                    <div><label>投入本金 (Auto)</label><input type="text" id="prin-${i}" class="readonly" readonly value="0"></div>
-                </div>`;
-        }).join('');
-    }
+    function renderPage(id) {
+        const app = document.getElementById('app');
+        // 映射組件對象
+        const components = {
+            'home': typeof DashboardComponent !== 'undefined' ? DashboardComponent : null,
+            'tool': typeof DataManagerComponent !== 'undefined' ? DataManagerComponent : null,
+            'market': typeof MarketComponent !== 'undefined' ? MarketComponent : null,
+            'log': typeof AboutLogComponent !== 'undefined' ? AboutLogComponent : null
+        };
 
-    function updateConfigName(index, value) { currentConfig[index] = value; }
-
-    function calcP(i) {
-        const t = parseFloat(document.getElementById(`t-${i}`).value) || 0;
-        const p = parseFloat(document.getElementById(`p-${i}`).value) || 0;
-        document.getElementById(`prin-${i}`).value = (t - p).toLocaleString(undefined, {minimumFractionDigits: 2});
-    }
-
-    function save() {
-        const now = new Date();
-        const dKey = now.toISOString().split('T')[0];
-        let data = { date: dKey, time: now.toLocaleTimeString('zh-HK',{hour12:false}), details: [], total: 0, profit: 0 };
-        let hasError = false;
-
-        currentConfig.forEach((_, i) => {
-            const n = document.getElementById(`name-${i}`).value;
-            const t = parseFloat(document.getElementById(`t-${i}`).value) || 0;
-            const p = parseFloat(document.getElementById(`p-${i}`).value) || 0;
-            if (n === "請選擇受託人") { alert(`請為第 ${i+1} 個項目選擇受託人！`); hasError = true; return; }
-            data.details.push({ n, t, p }); data.total += t; data.profit += p;
-        });
-
-        if(hasError || data.total === 0) return;
-        records = records.filter(r => r.date !== dKey);
-        records.unshift(data);
-        records.sort((a,b) => new Date(b.date) - new Date(a.date));
-        localStorage.setItem('mpf_v532', JSON.stringify(records));
-        alert("🎉 數據已成功存檔！");
-        renderTable(); updateStats(); renderChart();
-    }
-
-    function renderTable() {
-        const body = document.getElementById('history-body');
-        body.innerHTML = records.map((r, i) => `
-            <tr>
-                <td><b>${r.date}</b></td>
-                <td style="color:#999;">${r.time}</td>
-                <td style="color:var(--primary); font-weight:bold;">$${r.total.toLocaleString()}</td>
-                <td style="color:${r.profit >= 0 ? 'var(--success)':'var(--danger)'}">$${r.profit.toLocaleString()}</td>
-                <td>
-                    <button class="btn-op btn-view" onclick="viewRow(${i})">👁️</button>
-                    <button class="btn-op btn-edit" onclick="editRow(${i})">✏️</button>
-                    <button class="btn-op btn-del" onclick="delRow(${i})">🗑️</button>
-                </td>
-            </tr>`).join('');
-    }
-
-    function viewRow(i) {
-        const r = records[i];
-        document.getElementById('m-title').innerText = `${r.date} 組合詳情`;
-        document.getElementById('m-body').innerHTML = r.details.map(d => `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f0f0f0;"><span>${d.n}</span><b>$${d.t.toLocaleString()}</b></div>`).join('');
-        document.getElementById('viewModal').style.display = 'block';
-        const ctx = document.getElementById('pieChart').getContext('2d');
-        if(pieChart) pieChart.destroy();
-        pieChart = new Chart(ctx, { type: 'doughnut', data: { labels: r.details.map(d=>d.n), datasets: [{ data: r.details.map(d=>d.t), backgroundColor: ['#4285f4','#34a853','#fbbc05','#ea4335','#8e44ad','#00acc1'] }] }, options: { plugins: { legend: { position: 'bottom' } } } });
-    }
-
-    function editRow(i) {
-        const r = records[i]; currentConfig = r.details.map(d => d.n); renderInputs();
-        setTimeout(() => { r.details.forEach((d, idx) => { document.getElementById(`t-${idx}`).value = d.t; document.getElementById(`p-${idx}`).value = d.p; calcP(idx); }); switchPage('tool', document.querySelectorAll('.nav-item')[1]); }, 50);
-    }
-
-    function delRow(i) { if(confirm("確定刪除此紀錄？")) { records.splice(i,1); localStorage.setItem('mpf_v532', JSON.stringify(records)); renderTable(); updateStats(); renderChart(); } }
-
-    function renderChart(days = 90) {
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        if(mainChart) mainChart.destroy();
-        const filtered = [...records].reverse().slice(-days);
-        mainChart = new Chart(ctx, { type: 'line', data: { labels: filtered.map(r=>r.date), datasets: [{ label: 'Asset', data: filtered.map(r=>r.total), borderColor: '#1a73e8', backgroundColor: 'rgba(26,115,232,0.1)', tension: 0.3, fill: true, pointRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
-    }
-
-    function updateStats() {
-        if(records.length > 0) { document.getElementById('h-total').innerText = `$${records[0].total.toLocaleString()}`; document.getElementById('h-profit').innerText = `$${records[0].profit.toLocaleString()}`; }
-        document.getElementById('h-count').innerText = records.length;
-    }
-
-    function switchPage(p, el) {
-        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-        document.getElementById(p).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        el.classList.add('active');
-        if(p === 'home') setTimeout(() => renderChart(), 100);
-    }
-
-    function exportData() {
-        const blob = new Blob([JSON.stringify(records)], {type: 'application/json'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `MPF_Backup.json`; a.click();
-    }
-
-    function importData() {
-        const input = document.createElement('input'); input.type = 'file';
-        input.onchange = e => {
-            const reader = new FileReader();
-            reader.onload = ev => { records = JSON.parse(ev.target.result); localStorage.setItem('mpf_v532', JSON.stringify(records)); location.reload(); };
-            reader.readAsText(e.target.files[0]);
-        }; input.click();
+        const comp = components[id];
+        if (comp) {
+            app.innerHTML = comp.render();
+            if (comp.init) comp.init();
+        } else {
+            app.innerHTML = `<div class="card-panel">⚠️ 找不到組件 ${id}，請檢查 JS 檔案是否載入。</div>`;
+        }
     }
 
     function closeModal() { document.getElementById('viewModal').style.display = 'none'; }
-    const daysArr = ['日','一','二','三','四','五','六'];
-    setInterval(() => { 
-        const n = new Date(); document.getElementById('clock').innerText = n.toLocaleTimeString('zh-HK',{hour12:false}); 
-        document.getElementById('cur-date').innerText = `${n.getFullYear()}年${n.getMonth()+1}月${n.getDate()}日 星期${daysArr[n.getDay()]}`;
-    }, 1000);
 
-    async function fetchWeather() {
-        try { const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=22.3&longitude=114.1&current_weather=true'); const data = await res.json(); document.getElementById('weather').innerText = `🌡️ HK: ${data.current_weather.temperature}°C`; } catch(e) {}
+    function handleExport() {
+        const blob = new Blob([JSON.stringify(window.records)], {type: 'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `MPF_Backup.json`;
+        a.click();
     }
 
-    fetchWeather(); renderInputs(); renderTable(); updateStats();
-    setTimeout(() => renderChart(), 200);
+    function handleImport() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.onchange = e => {
+            const reader = new FileReader();
+            reader.onload = ev => {
+                const imported = JSON.parse(ev.target.result);
+                localStorage.setItem(DB_KEY, JSON.stringify(imported));
+                location.reload();
+            };
+            reader.readAsText(e.target.files[0]);
+        };
+        input.click();
+    }
+
+    initData();
+    window.addEventListener('load', () => renderPage('home'));
 </script>
+
+<script src="dashboard.js"></script>
+<script src="data-manager.js"></script>
+<script src="market.js"></script>
+<script src="about-log.js"></script>
 </body>
 </html>
