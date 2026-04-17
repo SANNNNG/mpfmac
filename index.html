@@ -6,79 +6,111 @@
     <title>MPF Pro Master</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #1a73e8; --success: #34a853; --warning: #fbbc04; --dark: #202124; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', 'PingFang TC', sans-serif; background: var(--bg); margin: 0; }
-        .navbar { background: var(--dark); color: white; padding: 0 30px; display: flex; align-items: center; height: 70px; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
-        .brand { display: flex; align-items: center; gap: 10px; }
+        :root { --primary: #1a73e8; --success: #34a853; --warning: #fbbc04; --dark: #0f172a; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', 'PingFang TC', sans-serif; background: var(--bg); margin: 0; overflow-y: scroll; }
+        
+        /* 導航列 */
+        .navbar { background: var(--dark); color: white; padding: 0 30px; display: flex; align-items: center; height: 70px; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .brand-icon { width: 24px; height: 24px; fill: var(--warning); }
-        .nav-item { cursor: pointer; padding: 10px 18px; border-radius: 10px; color: #a0aec0; transition: 0.3s; font-size: 14px; }
-        .nav-item.active { background: var(--primary); color: white; }
+        .nav-group { display: flex; gap: 8px; }
+        .nav-item { cursor: pointer; padding: 10px 18px; border-radius: 12px; color: #94a3b8; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 14px; font-weight: 600; }
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.08); }
+        .nav-item.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3); }
+
+        /* 頁面內容容器與切換動畫 */
         .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
-        .card-panel { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        .btn-io { background: rgba(255,255,255,0.1); border: 1px solid #4a5568; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-        #viewModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; }
-        .modal-content { background: white; width: 95%; max-width: 600px; padding: 30px; border-radius: 28px; max-height: 90vh; overflow-y: auto; }
+        .page-animate { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 彈窗美化與果凍動畫 */
+        #viewModal { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(15, 23, 42, 0.6); 
+            z-index: 2000; 
+            align-items: center; 
+            justify-content: center; 
+            backdrop-filter: blur(8px);
+        }
+        
+        .modal-content { 
+            background: white; 
+            width: 95%; 
+            max-width: 550px; 
+            padding: 30px; 
+            border-radius: 30px; 
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            animation: modalShow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes modalShow {
+            from { opacity: 0; transform: scale(0.9) translateY(30px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* 基礎卡片樣式 (用於各組件) */
+        .card-panel { background: white; padding: 25px; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #f1f5f9; }
+        
+        button:active { transform: scale(0.97); transition: 0.1s; }
     </style>
 </head>
 <body>
 
 <nav class="navbar">
-    <div class="brand">
-        <svg class="brand-icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-        <span style="font-weight:800;">MPF Pro Master</span>
+    <div class="brand" onclick="switchTab('home')">
+        <svg class="brand-icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+        <span style="font-weight:800; font-size:20px; letter-spacing:-0.5px;">MPF Pro Master</span>
     </div>
-    <div style="display:flex; gap:5px;">
-        <div class="nav-item active" onclick="switchTab('home', this)">🏠 儀表板</div>
-        <div class="nav-item" onclick="switchTab('tool', this)">✍️ 數據錄入</div>
-        <div class="nav-item" onclick="switchTab('market', this)">📊 市場分析</div>
-        <div class="nav-item" onclick="switchTab('log', this)">📜 更新日誌</div>
+    <div class="nav-group">
+        <div class="nav-item active" id="nav-home" onclick="switchTab('home')">🏠 儀表板</div>
+        <div class="nav-item" id="nav-tool" onclick="switchTab('tool')">✍️ 數據管理</div>
+        <div class="nav-item" id="nav-market" onclick="switchTab('market')">📊 市場分析</div>
+        <div class="nav-item" id="nav-log" onclick="switchTab('log')">📜 更新日誌</div>
     </div>
-    <div style="display: flex; gap: 8px;">
-        <button class="btn-io" onclick="handleExport()">📤 導出</button>
-        <button class="btn-io" onclick="handleImport()">📥 導入</button>
+    <div style="display:flex; gap:10px;">
+        <button onclick="handleExport()" style="background:rgba(255,255,255,0.05); border:1px solid #334155; color:#cbd5e0; padding:8px 15px; border-radius:8px; cursor:pointer; font-size:12px;">導出</button>
+        <button onclick="handleImport()" style="background:rgba(255,255,255,0.05); border:1px solid #334155; color:#cbd5e0; padding:8px 15px; border-radius:8px; cursor:pointer; font-size:12px;">導入</button>
     </div>
 </nav>
 
 <div id="app" class="container"></div>
-<div id="viewModal"><div class="modal-content" id="modal-body"></div></div>
+
+<div id="viewModal" onclick="if(event.target==this) closeModal()">
+    <div class="modal-content" id="modal-body"></div>
+</div>
 
 <script>
     const DB_KEY = 'MPF_PRO_DATA_V1';
     window.records = [];
 
-    // 修復數據初始化，確保數據格式一致
     function initData() {
-        try {
-            const raw = localStorage.getItem(DB_KEY);
-            if (raw) {
-                const parsed = JSON.parse(raw);
-                window.records = parsed.map(r => ({
-                    date: r.date,
-                    totalA: parseFloat(r.totalA) || 0,
-                    totalB: parseFloat(r.totalB) || 0,
-                    totalC: parseFloat(r.totalC) || 0,
-                    totalAll: parseFloat(r.totalA) || 0,
-                    details: Array.isArray(r.details) ? r.details : []
-                }));
-            }
-        } catch (e) {
-            console.error("數據加載失敗", e);
-            window.records = [];
-        }
+        const raw = localStorage.getItem(DB_KEY);
+        window.records = raw ? JSON.parse(raw) : [];
+        window.records.sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
-function switchTab(tabId, el) {
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    el.classList.add('active');
-    
-    // 關鍵修復：切換分頁時重新讀取一次 LocalStorage
-    initData(); 
-    renderPage(tabId);
-}
+    function switchTab(id) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        const activeNav = document.getElementById('nav-' + id);
+        if(activeNav) activeNav.classList.add('active');
+        renderPage(id);
+    }
 
     function renderPage(id) {
         const app = document.getElementById('app');
-        // 映射組件對象
+        
+        // 觸發轉場動畫
+        app.classList.remove('page-animate');
+        void app.offsetWidth; 
+        app.classList.add('page-animate');
+
         const components = {
             'home': typeof DashboardComponent !== 'undefined' ? DashboardComponent : null,
             'tool': typeof DataManagerComponent !== 'undefined' ? DataManagerComponent : null,
@@ -90,18 +122,25 @@ function switchTab(tabId, el) {
         if (comp) {
             app.innerHTML = comp.render();
             if (comp.init) comp.init();
-        } else {
-            app.innerHTML = `<div class="card-panel">⚠️ 找不到組件 ${id}，請檢查 JS 檔案是否載入。</div>`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
 
-    function closeModal() { document.getElementById('viewModal').style.display = 'none'; }
+    function closeModal() {
+        const modal = document.getElementById('viewModal');
+        const content = modal.querySelector('.modal-content');
+        content.style.animation = 'modalShow 0.2s reverse forwards';
+        setTimeout(() => {
+            modal.style.display = 'none';
+            content.style.animation = '';
+        }, 200);
+    }
 
     function handleExport() {
         const blob = new Blob([JSON.stringify(window.records)], {type: 'application/json'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `MPF_Backup.json`;
+        a.download = `MPF_Backup_${new Date().toISOString().split('T')[0]}.json`;
         a.click();
     }
 
