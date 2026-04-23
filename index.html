@@ -2,145 +2,176 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MPF Pro Master</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MPF Master</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Poppins:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #1a73e8; --success: #34a853; --warning: #fbbc04; --dark: #0f172a; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', 'PingFang TC', sans-serif; background: var(--bg); margin: 0; overflow-y: scroll; }
-        
-        /* 導航列 */
-        .navbar { background: var(--dark); color: white; padding: 0 30px; display: flex; align-items: center; height: 70px; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        /* --- 完全保留你的主題變數 --- */
+        :root {
+            --bg: #f8f9fa; --card-bg: white; --navbar-bg: white; --text-main: #1e293b;
+            --text-sub: #64748b; --border: #f1f5f9; --accent: #3b82f6; --primary-btn: #1e293b;
+        }
+        [data-theme='afternoon'] {
+            --bg: #fdf6e3; --card-bg: #fffbf2; --navbar-bg: #fffbf2; --text-main: #586e75;
+            --text-sub: #93a1a1; --border: #eee8d5; --accent: #b58900; --primary-btn: #586e75;
+        }
+        [data-theme='night'] {
+            --bg: #0f172a; --card-bg: #1e293b; --navbar-bg: #1e293b; --text-main: #f1f5f9;
+            --text-sub: #94a3b8; --border: #334155; --accent: #38bdf8; --primary-btn: #334155;
+        }
+
+        * { transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+        body { font-family: 'Inter', 'PingFang TC', sans-serif; background: var(--bg); color: var(--text-main); margin: 0; overflow-y: scroll; }
+
+        /* --- 導覽列與主題開關 (完全保留) --- */
+        .navbar { 
+            background: var(--navbar-bg); padding: 0 24px; display: flex; align-items: center; 
+            height: 72px; justify-content: space-between; position: sticky; top: 0; z-index: 1000; 
+            box-shadow: 0 1px 0 0 rgba(0,0,0,0.05);
+        }
+        .brand-section { display: flex; align-items: center; gap: 15px; }
         .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .brand-icon { width: 24px; height: 24px; fill: var(--warning); }
-        .nav-group { display: flex; gap: 8px; }
-        .nav-item { cursor: pointer; padding: 10px 18px; border-radius: 12px; color: #94a3b8; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 14px; font-weight: 600; }
-        .nav-item:hover { color: white; background: rgba(255,255,255,0.08); }
-        .nav-item.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3); }
+        .brand-icon { width: 28px; height: 28px; background: var(--accent); border-radius: 8px; padding: 5px; flex-shrink: 0; }
+        .brand span { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 20px; color: var(--text-main); }
+        .brand span em { font-style: normal; color: var(--accent); }
 
-        /* 頁面內容容器與切換動畫 */
-        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
-        .page-animate { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+        .theme-switcher {
+            background: #e2e8f0; border-radius: 20px; width: 96px; height: 34px;
+            display: flex; align-items: center; position: relative; cursor: pointer; padding: 0;
         }
-
-        /* 彈窗美化與果凍動畫 */
-        #viewModal { 
-            display: none; 
-            position: fixed; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(15, 23, 42, 0.6); 
-            z-index: 2000; 
-            align-items: center; 
-            justify-content: center; 
-            backdrop-filter: blur(8px);
+        .theme-option { flex: 1; text-align: center; font-size: 14px; z-index: 2; user-select: none; }
+        .theme-dot {
+            position: absolute; width: 28px; height: 28px; background: white; border-radius: 50%;
+            z-index: 1; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2); left: 3px;
         }
-        
-        .modal-content { 
-            background: white; 
-            width: 95%; 
-            max-width: 550px; 
-            padding: 30px; 
-            border-radius: 30px; 
-            position: relative;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-            animation: modalShow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
+        .theme-switcher[data-pos='0'] .theme-dot { transform: translateX(0); }
+        .theme-switcher[data-pos='1'] .theme-dot { transform: translateX(31px); }
+        .theme-switcher[data-pos='2'] .theme-dot { transform: translateX(62px); }
 
-        @keyframes modalShow {
-            from { opacity: 0; transform: scale(0.9) translateY(30px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
+        .nav-group { display: flex; gap: 4px; flex: 1; justify-content: center; margin: 0 15px; }
+        .nav-item { cursor: pointer; padding: 10px 16px; border-radius: 12px; color: var(--text-sub); font-size: 14px; font-weight: 600; white-space: nowrap; }
+        .nav-item.active { background: rgba(59, 130, 246, 0.1); color: var(--accent); }
 
-        /* 基礎卡片樣式 (用於各組件) */
-        .card-panel { background: white; padding: 25px; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #f1f5f9; }
-        
-        button:active { transform: scale(0.97); transition: 0.1s; }
+        .nav-right { display: flex; align-items: center; gap: 10px; }
+        .btn-csv { background: #10b981; color: white; border: none; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .btn-desktop { background: var(--primary-btn); color: white; border: none; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .btn-io { background: transparent; border: 1px solid var(--border); color: var(--text-sub); padding: 8px; border-radius: 8px; cursor: pointer; }
+
+        .container { max-width: 1200px; margin: 25px auto; padding: 0 15px; min-height: 80vh; }
+        .page-animate { animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        #viewModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .modal-content { background: var(--card-bg); width: 92%; max-width: 500px; padding: 25px; border-radius: 30px; position: relative; animation: modalShow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        @keyframes modalShow { from { opacity: 0; transform: scale(0.9) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+        @media (max-width: 850px) {
+            .navbar { height: auto; padding: 15px; flex-direction: column; gap: 15px; }
+            .nav-group { width: 100%; overflow-x: auto; justify-content: flex-start; margin: 0; }
+        }
     </style>
 </head>
 <body>
 
 <nav class="navbar">
-    <div class="brand" onclick="switchTab('home')">
-        <svg class="brand-icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
-        <span style="font-weight:800; font-size:20px; letter-spacing:-0.5px;">MPF Pro Master</span>
+    <div class="brand-section">
+        <div class="brand" onclick="switchTab('home')">
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline></svg>
+            </div>
+            <span>MPF <em>Master</em></span>
+        </div>
+        <div class="theme-switcher" id="themeSwitcher" data-pos="0" onclick="toggleTheme()">
+            <div class="theme-dot"></div>
+            <div class="theme-option">☀️</div><div class="theme-option">☕</div><div class="theme-option">🌙</div>
+        </div>
     </div>
+
     <div class="nav-group">
         <div class="nav-item active" id="nav-home" onclick="switchTab('home')">🏠 儀表板</div>
-        <div class="nav-item" id="nav-tool" onclick="switchTab('tool')">✍️ 數據管理</div>
-        <div class="nav-item" id="nav-market" onclick="switchTab('market')">📊 市場分析</div>
-        <div class="nav-item" id="nav-log" onclick="switchTab('log')">📜 更新日誌</div>
+        <div class="nav-item" id="nav-tool" onclick="switchTab('tool')">✍️ 管理</div>
+        <div class="nav-item" id="nav-predict" onclick="switchTab('predict')">📈 退休預測</div>
+        <div class="nav-item" id="nav-market" onclick="switchTab('market')">📊 市場</div>
+        <div class="nav-item" id="nav-log" onclick="switchTab('log')">💡 資訊</div>
     </div>
-    <div style="display:flex; gap:10px;">
-        <button onclick="handleExport()" style="background:rgba(255,255,255,0.05); border:1px solid #334155; color:#cbd5e0; padding:8px 15px; border-radius:8px; cursor:pointer; font-size:12px;">導出</button>
-        <button onclick="handleImport()" style="background:rgba(255,255,255,0.05); border:1px solid #334155; color:#cbd5e0; padding:8px 15px; border-radius:8px; cursor:pointer; font-size:12px;">導入</button>
+
+    <div class="nav-right">
+        <button class="btn-csv" onclick="handleExportCSV()">📊 匯出 CSV</button>
+        <button class="btn-io" onclick="handleExport()" title="備份">📤</button>
+        <button class="btn-io" onclick="handleImport()" title="導入">📥</button>
     </div>
 </nav>
 
 <div id="app" class="container"></div>
+<div id="viewModal" onclick="if(event.target==this) closeModal()"><div class="modal-content" id="modal-body"></div></div>
 
-<div id="viewModal" onclick="if(event.target==this) closeModal()">
-    <div class="modal-content" id="modal-body"></div>
-</div>
+<script src="dashboard.js"></script>
+<script src="data-manager.js"></script>
+<script src="predict.js"></script>
+<script src="market.js"></script>
+<script src="about-log.js"></script>
+<script src="desktop-guide.js"></script>
 
 <script>
     const DB_KEY = 'MPF_PRO_DATA_V1';
+    const THEME_KEY = 'MPF_THEME_POS';
     window.records = [];
 
-    function initData() {
-        const raw = localStorage.getItem(DB_KEY);
-        window.records = raw ? JSON.parse(raw) : [];
-        window.records.sort((a, b) => new Date(b.date) - new Date(a.date));
+    function setTheme(pos) {
+        const root = document.documentElement;
+        const switcher = document.getElementById('themeSwitcher');
+        const themes = ['light', 'afternoon', 'night'];
+        if(switcher) switcher.setAttribute('data-pos', pos);
+        pos == 0 ? root.removeAttribute('data-theme') : root.setAttribute('data-theme', themes[pos]);
+        localStorage.setItem(THEME_KEY, pos);
+    }
+
+    function toggleTheme() {
+        let nextPos = (parseInt(localStorage.getItem(THEME_KEY) || 0) + 1) % 3;
+        setTheme(nextPos);
     }
 
     function switchTab(id) {
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        const activeNav = document.getElementById('nav-' + id);
-        if(activeNav) activeNav.classList.add('active');
+        const nav = document.getElementById('nav-' + id);
+        if(nav) nav.classList.add('active');
         renderPage(id);
     }
 
     function renderPage(id) {
         const app = document.getElementById('app');
+        const comps = { 'home': DashboardComponent, 'tool': DataManagerComponent, 'predict': PredictionComponent, 'market': MarketComponent, 'log': AboutLogComponent, 'desktop': DesktopGuideComponent };
+        const comp = comps[id];
         
-        // 觸發轉場動畫
         app.classList.remove('page-animate');
-        void app.offsetWidth; 
+        void app.offsetWidth;
+        app.innerHTML = comp.render();
+        if(comp.init) comp.init();
         app.classList.add('page-animate');
-
-        const components = {
-            'home': typeof DashboardComponent !== 'undefined' ? DashboardComponent : null,
-            'tool': typeof DataManagerComponent !== 'undefined' ? DataManagerComponent : null,
-            'market': typeof MarketComponent !== 'undefined' ? MarketComponent : null,
-            'log': typeof AboutLogComponent !== 'undefined' ? AboutLogComponent : null
-        };
-
-        const comp = components[id];
-        if (comp) {
-            app.innerHTML = comp.render();
-            if (comp.init) comp.init();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
     }
 
-    function closeModal() {
-        const modal = document.getElementById('viewModal');
-        const content = modal.querySelector('.modal-content');
-        content.style.animation = 'modalShow 0.2s reverse forwards';
-        setTimeout(() => {
-            modal.style.display = 'none';
-            content.style.animation = '';
-        }, 200);
+    function handleExportCSV() {
+        if (!window.records.length) return alert("沒有數據");
+        let csv = "\uFEFF日期,受託人,總額(A),盈虧(B),本金(C)\n";
+        window.records.forEach(r => {
+            r.details.forEach(d => {
+                csv += `${r.date},${d.n},${d.a},${d.b},${d.c}\n`;
+            });
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `MPF_Data_${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
     }
 
     function handleExport() {
         const blob = new Blob([JSON.stringify(window.records)], {type: 'application/json'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `MPF_Backup_${new Date().toISOString().split('T')[0]}.json`;
+        a.download = `MPF_Backup.json`;
         a.click();
     }
 
@@ -150,8 +181,7 @@
         input.onchange = e => {
             const reader = new FileReader();
             reader.onload = ev => {
-                const imported = JSON.parse(ev.target.result);
-                localStorage.setItem(DB_KEY, JSON.stringify(imported));
+                localStorage.setItem(DB_KEY, ev.target.result);
                 location.reload();
             };
             reader.readAsText(e.target.files[0]);
@@ -159,13 +189,19 @@
         input.click();
     }
 
-    initData();
-    window.addEventListener('load', () => renderPage('home'));
-</script>
+    function closeModal() {
+        const modal = document.getElementById('viewModal');
+        const content = modal.querySelector('.modal-content');
+        content.style.animation = 'modalShow 0.2s reverse forwards';
+        setTimeout(() => { modal.style.display = 'none'; content.style.animation = ''; }, 200);
+    }
 
-<script src="dashboard.js"></script>
-<script src="data-manager.js"></script>
-<script src="market.js"></script>
-<script src="about-log.js"></script>
+    window.onload = () => {
+        setTheme(localStorage.getItem(THEME_KEY) || 0);
+        const raw = localStorage.getItem(DB_KEY);
+        window.records = raw ? JSON.parse(raw) : [];
+        renderPage('home');
+    };
+</script>
 </body>
 </html>
